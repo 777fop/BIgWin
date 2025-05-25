@@ -5,21 +5,19 @@ import { Button } from '@/components/ui/button';
 import { User } from '@/types';
 
 interface SpinningWheelProps {
-  user: User;
+  user: { balance: number };
   onWin: (amount: number) => void;
   onLose: (amount: number) => void;
   onClose: () => void;
 }
 
-import { useRef } from 'react';
-
 const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onClose }) => {
   const [isSpinning, setIsSpinning] = useState(false);
-  const [result, setResult] = useState<{ type: 'win' | 'lose', amount: number } | null>(null);
+  const [result, setResult] = useState<{ type: 'win' | 'lose'; amount: number } | null>(null);
   const [hasSpunToday, setHasSpunToday] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [stakeAmount, setStakeAmount] = useState(1);
-  const spinCountRef = useRef(0); // 🔁 Track how many spins
+  const spinCountRef = useRef(0);
 
   const segments = [
     { type: 'lose', amount: 0, color: '#ff4757' },
@@ -44,42 +42,45 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
 
   const spinWheel = () => {
     if (!canSpin()) return;
-  
+
     setIsSpinning(true);
     setResult(null);
-  
+
     const spins = 5 + Math.random() * 5;
-    const finalRotation = rotation + (spins * 360);
+    const finalRotation = rotation + spins * 360;
     setRotation(finalRotation);
-  
+
     setTimeout(() => {
       let selectedSegment;
-  
-      const isWin = Math.random() < 0.6; // 🎯 60% chance to win
-  
-      if (isWin) {
-        let winSegments = segments.filter(s => s.type === 'win');
-  
-        // Remove 10 USDT wins if stake is not above 10
-        if (stakeAmount <= 10) {
-          winSegments = winSegments.filter(s => s.amount !== 10);
-        }
-  
-        selectedSegment = winSegments[Math.floor(Math.random() * winSegments.length)];
-      } else {
+
+      // If balance above 60, force lose
+      if (user.balance > 60) {
         const loseSegments = segments.filter(s => s.type === 'lose');
         selectedSegment = loseSegments[Math.floor(Math.random() * loseSegments.length)];
+      } else {
+        // 60% chance to win, 40% to lose
+        const isWin = Math.random() < 0.5;
+        if (isWin) {
+          // Wins, but no 10 USDT wins unless stake > 10
+          const winSegments = segments.filter(s => s.type === 'win' && !(s.amount === 10 && stakeAmount <= 10));
+          selectedSegment = winSegments[Math.floor(Math.random() * winSegments.length)];
+        } else {
+          // Lose segment
+          const loseSegments = segments.filter(s => s.type === 'lose');
+          selectedSegment = loseSegments[Math.floor(Math.random() * loseSegments.length)];
+        }
       }
-  
+
+      spinCountRef.current++;
       setIsSpinning(false);
       setResult({ type: selectedSegment.type, amount: selectedSegment.amount });
       setHasSpunToday(true);
-  
+
       setTimeout(() => {
         if (selectedSegment.type === 'win') {
-          onWin(selectedSegment.amount);
+          onWin(selectedSegment.amount * stakeAmount);  // multiply by stake
         } else {
-          onLose(stakeAmount);
+          onLose(stakeAmount); // deduct stake on lose
         }
       }, 1000);
     }, 4000);
