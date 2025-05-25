@@ -61,7 +61,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       const updated = [newStory, ...prev];
       return updated.slice(0, 600); // Keep only the last 500
     });
-  }, 13000); // Add every 5 seconds
+  }, 14000); // Add every 5 seconds
 
   return () => clearInterval(interval);
 }, []);
