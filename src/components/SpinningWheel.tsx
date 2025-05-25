@@ -59,7 +59,7 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
         selectedSegment = loseSegments[Math.floor(Math.random() * loseSegments.length)];
       } else {
         // 60% chance to win, 40% to lose
-        const isWin = Math.random() < 0.5;
+        const isWin = Math.random() < 0.6;
         if (isWin) {
           // Wins, but no 10 USDT wins unless stake > 10
           const winSegments = segments.filter(s => s.type === 'win' && !(s.amount === 10 && stakeAmount <= 10));
