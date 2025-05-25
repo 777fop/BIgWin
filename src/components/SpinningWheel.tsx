@@ -11,14 +11,16 @@ interface SpinningWheelProps {
   onClose: () => void;
 }
 
+import { useRef } from 'react';
+
 const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onClose }) => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [result, setResult] = useState<{ type: 'win' | 'lose', amount: number } | null>(null);
   const [hasSpunToday, setHasSpunToday] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [stakeAmount, setStakeAmount] = useState(1);
+  const spinCountRef = useRef(0); // 🔁 Track how many spins
 
-  // Higher losing chances - more losing segments
   const segments = [
     { type: 'lose', amount: 0, color: '#ff4757' },
     { type: 'win', amount: 2, color: '#2ed573' },
@@ -26,7 +28,6 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
     { type: 'win', amount: 5, color: '#2ed573' },
     { type: 'lose', amount: 0, color: '#ff4757' },
     { type: 'win', amount: 1, color: '#2ed573' },
-    { type: 'lose', amount: 0, color: '#ff4757' },
     { type: 'lose', amount: 0, color: '#ff4757' },
     { type: 'win', amount: 3, color: '#2ed573' },
     { type: 'lose', amount: 0, color: '#ff4757' },
@@ -43,34 +44,37 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
 
   const spinWheel = () => {
     if (!canSpin()) return;
-    
+  
     setIsSpinning(true);
     setResult(null);
-    
-    // Calculate random rotation
+  
     const spins = 5 + Math.random() * 5;
     const finalRotation = rotation + (spins * 360);
     setRotation(finalRotation);
-    
+  
     setTimeout(() => {
-      // 70% chance to lose
-      const isWin = Math.random() > 0.7;
       let selectedSegment;
-      
+  
+      const isWin = Math.random() < 0.6; // 🎯 60% chance to win
+  
       if (isWin) {
-        // Select a winning segment
-        const winSegments = segments.filter(s => s.type === 'win');
+        let winSegments = segments.filter(s => s.type === 'win');
+  
+        // Remove 10 USDT wins if stake is not above 10
+        if (stakeAmount <= 10) {
+          winSegments = winSegments.filter(s => s.amount !== 10);
+        }
+  
         selectedSegment = winSegments[Math.floor(Math.random() * winSegments.length)];
       } else {
-        // Select a losing segment
         const loseSegments = segments.filter(s => s.type === 'lose');
         selectedSegment = loseSegments[Math.floor(Math.random() * loseSegments.length)];
       }
-      
+  
       setIsSpinning(false);
       setResult({ type: selectedSegment.type, amount: selectedSegment.amount });
       setHasSpunToday(true);
-      
+  
       setTimeout(() => {
         if (selectedSegment.type === 'win') {
           onWin(selectedSegment.amount);
@@ -80,6 +84,8 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
       }, 1000);
     }, 4000);
   };
+  
+  
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -169,7 +175,7 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
                             <div className="text-xs">USDT</div>
                           </>
                         ) : (
-                          <div className="text-lg font-bold">💀</div>
+                          <div className="text-lg font-bold">🤑</div>
                         )}
                       </div>
                     </div>

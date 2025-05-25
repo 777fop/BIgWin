@@ -35,6 +35,7 @@ export interface Plan {
   name: string;
   price: number;
   dailyClaim: number;
+  withdrawalMinimum: number;
   color: string;
   features: string[];
 }
