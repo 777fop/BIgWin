@@ -14,7 +14,7 @@ const WithdrawalForm: React.FC<WithdrawalFormProps> = ({ user, onClose }) => {
   const [amount, setAmount] = useState('');
   const [address, setAddress] = useState('');
 
-  const minimumWithdraw = 300;
+  const minimumWithdraw = 100;
   const processingFee = 5;
 
   const handleWithdraw = (e: React.FormEvent) => {
