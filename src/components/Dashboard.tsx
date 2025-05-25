@@ -89,24 +89,27 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       name: 'Basic',
       price: 0,
       dailyClaim: 0.5,
+      withdrawalMinimum: 100,
       color: 'bg-gray-600',
-      features: ['0.5 USDT daily claim', 'Basic support', '1 referral bonus']
+      features: ['0.5 USDT daily claim', 'Basic support', '1 referral bonus','withdrawalMinimum']
     },
     {
       id: 'premium',
       name: 'Premium',
       price: 10,
       dailyClaim: 3,
+      withdrawalMinimum: 5.00,
       color: 'bg-blue-600',
-      features: ['3 USDT daily claim', 'Priority support', '3x referral bonus', '3 wheel spins/day']
+      features: ['3 USDT daily claim', 'Priority support', '3x referral bonus', '3 wheel spins/day','withdrawalMinimum']
     },
     {
       id: 'vip',
       name: 'VIP',
       price: 20,
       dailyClaim: 6,
+      withdrawalMinimum: 5.00,
       color: 'bg-purple-600',
-      features: ['6 USDT daily claim', 'VIP support', '5x referral bonus', 'Unlimited wheel spins']
+      features: ['6 USDT daily claim', 'VIP support', '5x referral bonus', 'Unlimited wheel spins','withdrawalMinimum']
     }
   ];
 
