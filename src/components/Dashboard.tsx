@@ -23,6 +23,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [successStories, setSuccessStories] = useState<string[]>([]);
 
+  
+
   // Real names for success stories
   const realNames = [
     'Emmanuel', 'Richard', 'Stephanie', 'Michael', 'Sarah', 'David', 'Jessica', 
@@ -49,21 +51,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       }
     };
 
-    // Initial stories
-    const initialStories = Array.from({ length: 6 }, generateStory);
-    setSuccessStories(initialStories);
+  // Start with 100 stories
+  const initialStories = Array.from({ length: 100 }, generateStory);
+  setSuccessStories(initialStories);
 
-    // Add new story every 8 seconds
-    const interval = setInterval(() => {
-      setSuccessStories(prev => {
-        const newStory = generateStory();
-        return [newStory, ...prev.slice(0, 5)]; // Keep only 6 stories
-      });
-    }, 8000);
+  const interval = setInterval(() => {
+    setSuccessStories(prev => {
+      const newStory = generateStory();
+      const updated = [newStory, ...prev];
+      return updated.slice(0, 500); // Keep only the last 500
+    });
+  }, 25000); // Add every 5 seconds
 
-    return () => clearInterval(interval);
-  }, []);
+  return () => clearInterval(interval);
+}, []);
 
+ 
   // Handle registration bonus
   useEffect(() => {
     if (user.hasRegistrationBonus && user.balance === 0) {
@@ -325,7 +328,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
               </div>
               <Button 
                 onClick={() => {
-                  navigator.clipboard.writeText(`Join this amazing crypto platform and start earning USDT daily! Use my referral code: ${user.referralCode}`);
+                  // navigator.clipboard.writeText(`https://bigwin-yq75.onrender.com/ Use my referral code: ${user.referralCode}`);
+                  navigator.clipboard.writeText(`https://bigwin-yq75.onrender.com/ Use my referral code: ${user.referralCode}`);
                   alert('Referral message copied to clipboard!');
                 }}
                 className="gold-gradient text-black font-bold"
