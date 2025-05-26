@@ -2,24 +2,41 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plan } from '@/types';
+import { Plan, User } from '@/types';
+import { StorageService } from '@/services/storageService';
 
 interface PlanUpgradeProps {
   plans: Plan[];
   currentPlan: Plan;
+  user: User;
   onUpgrade: (plan: Plan) => void;
   onClose: () => void;
 }
 
-const PlanUpgrade: React.FC<PlanUpgradeProps> = ({ plans, currentPlan, onUpgrade, onClose }) => {
-  const walletAddress = "TBTUrLR2hnb3tTxXJBxsHwhb3GGQzUYBzY"; // TRC20 USDT address
+const PlanUpgrade: React.FC<PlanUpgradeProps> = ({ plans, currentPlan, user, onUpgrade, onClose }) => {
+  const walletAddress = "TBTUrLR2hnb3tTxXJBxsHwhb3GGQzUYBzY";
 
   const handleUpgrade = (plan: Plan) => {
     if (plan.price > 0) {
-      // Show payment instruction
-      alert(`To upgrade to ${plan.name} plan:\n\nSend exactly ${plan.price} USDT (TRC20) to:\n${walletAddress}\n\nAfter payment, submit the upgrade request and your account will be upgraded!`);
+      // Create upgrade request
+      const request = StorageService.createUpgradeRequest(user, plan.id, plan.name, plan.price);
+      
+      // Update user with pending upgrade
+      const updatedUser = {
+        ...user,
+        pendingUpgrade: {
+          planId: plan.id,
+          amount: plan.price,
+          status: 'pending' as const,
+          requestDate: new Date().toISOString()
+        }
+      };
+      
+      onUpgrade(plan);
+      alert(`To upgrade to ${plan.name} plan:\n\nSend exactly ${plan.price} USDT (TRC20) to:\n${walletAddress}\n\nYour account will be upgraded once payment is confirmed!`);
+    } else {
+      onUpgrade(plan);
     }
-    onUpgrade(plan);
   };
 
   return (
@@ -27,12 +44,13 @@ const PlanUpgrade: React.FC<PlanUpgradeProps> = ({ plans, currentPlan, onUpgrade
       <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <Card className="crypto-card text-white border-0">
           <CardHeader className="text-center relative">
-            <button
+            <Button
               onClick={onClose}
-              className="absolute top-4 right-4 text-white hover:text-gray-300 text-2xl font-bold bg-black/30 w-8 h-8 rounded-full flex items-center justify-center"
+              className="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-white border border-gray-600 w-8 h-8 p-0 text-lg"
+              size="sm"
             >
               ×
-            </button>
+            </Button>
             <CardTitle className="text-3xl font-bold neon-text">
               ⬆️ Upgrade Your Plan
             </CardTitle>
@@ -72,9 +90,10 @@ const PlanUpgrade: React.FC<PlanUpgradeProps> = ({ plans, currentPlan, onUpgrade
                     {currentPlan.id !== plan.id && (
                       <Button 
                         onClick={() => handleUpgrade(plan)}
-                        className="w-full gold-gradient text-black font-bold mt-4 hover:scale-105 transition-transform"
+                        disabled={!!user.pendingUpgrade}
+                        className="w-full gold-gradient text-black font-bold mt-4 hover:scale-105 transition-transform disabled:opacity-50"
                       >
-                        {plan.price === 0 ? 'DOWNGRADE' : '💰 REQUEST UPGRADE'}
+                        {plan.price === 0 ? 'DOWNGRADE' : user.pendingUpgrade ? 'UPGRADE PENDING' : '💰 REQUEST UPGRADE'}
                       </Button>
                     )}
                   </CardContent>

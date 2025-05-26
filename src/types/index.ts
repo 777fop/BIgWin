@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   email: string;
@@ -14,11 +15,13 @@ export interface User {
     amount: number;
     transactionHash?: string;
     status: 'pending' | 'confirmed' | 'rejected';
+    requestDate: string;
   };
   lastSpinDate: string | null;
   stakingBalance: number;
   isAdmin?: boolean;
   hasRegistrationBonus?: boolean;
+  referredBy?: string;
 }
 
 export interface Transaction {
@@ -38,4 +41,18 @@ export interface Plan {
   withdrawalMinimum: number;
   color: string;
   features: string[];
+}
+
+export interface UpgradeRequest {
+  id: string;
+  userId: string;
+  username: string;
+  email: string;
+  planId: string;
+  planName: string;
+  amount: number;
+  transactionHash?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestDate: string;
+  responseDate?: string;
 }

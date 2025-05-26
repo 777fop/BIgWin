@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User } from '@/types';
+import { StorageService } from '@/services/storageService';
 
 interface AuthFormProps {
   onLogin: (user: User) => void;
@@ -15,50 +16,39 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Check for admin credentials
-    if (email === 'robivine99@gmail.com' && password === 'BK-24') {
-      // Create admin user
-      const adminUser: User = {
-        id: 'admin-user',
-        email,
-        username: 'Admin',
-        balance: 0,
-        referralCode: 'ADMIN',
-        referralCount: 0,
-        plan: 'vip',
-        lastClaim: null,
-        totalEarned: 0,
-        registrationDate: new Date().toISOString(),
-        lastSpinDate: null,
-        stakingBalance: 0,
-        isAdmin: true
-      };
-      onLogin(adminUser);
-      return;
-    }
-    
-    // Simulate user creation
-    const newUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
-      email,
-      username: username || email.split('@')[0],
-      balance: 0, // Start with 0 balance
-      referralCode: Math.random().toString(36).substr(2, 8).toUpperCase(),
-      referralCount: 0,
-      plan: 'basic',
-      lastClaim: null,
-      totalEarned: 0,
-      registrationDate: new Date().toISOString(),
-      lastSpinDate: null,
-      stakingBalance: 0,
-      hasRegistrationBonus: !isLogin // Only new users get registration bonus
-    };
+    setError('');
+    setLoading(true);
 
-    onLogin(newUser);
+    try {
+      if (isLogin) {
+        // Login
+        const user = StorageService.authenticateUser(email, password);
+        if (user) {
+          StorageService.setCurrentUser(user);
+          onLogin(user);
+        } else {
+          setError('Invalid email or password');
+        }
+      } else {
+        // Registration
+        try {
+          const newUser = StorageService.registerUser(email, username, referralCode);
+          StorageService.setCurrentUser(newUser);
+          onLogin(newUser);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Registration failed');
+        }
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,6 +64,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-500/20 border border-red-500/30 p-3 rounded text-red-300 text-sm">
+                {error}
+              </div>
+            )}
+            
             <Input
               type="email"
               placeholder="Email"
@@ -107,22 +103,33 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
                 type="text"
                 placeholder="Referral Code (optional)"
                 value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value)}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
                 className="bg-white/10 border-white/20 text-white placeholder-white/60"
               />
             )}
             
             <Button 
               type="submit" 
-              className="w-full gold-gradient text-black font-bold text-lg py-3 hover:scale-105 transition-transform"
+              disabled={loading}
+              className="w-full gold-gradient text-black font-bold text-lg py-3 hover:scale-105 transition-transform disabled:opacity-50"
             >
-              {isLogin ? '🚀 LOGIN NOW' : '💎 CLAIM 1 USDT BONUS'}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black"></div>
+                  {isLogin ? 'Logging in...' : 'Creating account...'}
+                </div>
+              ) : (
+                isLogin ? '🚀 LOGIN NOW' : '💎 CLAIM 1 USDT BONUS'
+              )}
             </Button>
           </form>
           
           <div className="text-center mt-4">
             <button
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+              }}
               className="text-yellow-300 hover:text-yellow-100 underline"
             >
               {isLogin ? "Don't have an account? Sign up!" : 'Already have an account? Login!'}
@@ -136,6 +143,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
               </p>
             </div>
           )}
+
+          <div className="mt-4 p-3 bg-blue-500/20 rounded-lg border border-blue-500/30">
+            <p className="text-blue-200 text-xs text-center">
+              Demo credentials: Any email with password "BK-24"<br/>
+              Admin access: robivine99@gmail.com / BK-24
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

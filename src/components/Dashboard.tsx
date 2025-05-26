@@ -163,12 +163,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       pendingUpgrade: {
         planId: plan.id,
         amount: plan.price,
-        status: 'pending' as const
+        status: 'pending' as const,
+        requestDate: new Date().toISOString()
       }
     };
     onUserUpdate(updatedUser);
     setShowUpgrade(false);
-    alert('Upgrade request submitted! Your account will be upgraded once payment is confirmed.');
+    alert('Your account will be upgraded once payment is confirmed.');
   };
 
   const handleSpinWin = (amount: number) => {
@@ -372,7 +373,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       {showUpgrade && (
         <PlanUpgrade 
           plans={plans} 
-          currentPlan={currentPlan} 
+          currentPlan={currentPlan}
+          user={user}
           onUpgrade={handleUpgrade} 
           onClose={() => setShowUpgrade(false)} 
         />
