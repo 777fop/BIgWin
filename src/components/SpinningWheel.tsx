@@ -1,8 +1,8 @@
-
-import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User } from '@/types';
+
+import { useRef, useState } from 'react';
 
 interface SpinningWheelProps {
   user: { balance: number };
@@ -85,8 +85,6 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
       }, 1000);
     }, 4000);
   };
-  
-  
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -100,7 +98,7 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
             Balance: <span className="font-bold text-green-400">{user.balance.toFixed(2)} USDT</span>
           </div>
         </CardHeader>
-        
+
         <CardContent className="flex flex-col items-center space-y-6">
           {/* Staking Input */}
           <div className="w-full max-w-md bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 p-6 rounded-lg">
@@ -139,7 +137,6 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
           {/* Spinning Wheel */}
           <div className="relative">
             <div className="absolute inset-0 w-72 h-72 rounded-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-xl opacity-30 animate-pulse"></div>
-            
             <div className="relative w-72 h-72">
               <div 
                 className="w-full h-full rounded-full border-8 border-yellow-400 relative overflow-hidden shadow-2xl"
@@ -151,7 +148,7 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
                 {segments.map((segment, index) => {
                   const angle = (360 / segments.length) * index;
                   const nextAngle = (360 / segments.length) * (index + 1);
-                  
+
                   return (
                     <div
                       key={index}
@@ -183,12 +180,10 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
                   );
                 })}
               </div>
-              
               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full border-4 border-white shadow-lg flex items-center justify-center">
                 <div className="text-lg">🎯</div>
               </div>
             </div>
-            
             <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 z-10">
               <div className="w-0 h-0 border-l-6 border-r-6 border-b-12 border-l-transparent border-r-transparent border-b-red-500 shadow-lg"></div>
             </div>
