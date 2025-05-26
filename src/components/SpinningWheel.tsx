@@ -76,7 +76,7 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
       setIsSpinning(false);
       setResult({ type: selectedSegment.type, amount: selectedSegment.amount });
 
-      // Don't auto-close, let user stay on the page
+      // Update balance after showing result
       setTimeout(() => {
         if (selectedSegment.type === 'win') {
           onWin(selectedSegment.amount * stakeAmount);
@@ -88,38 +88,38 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
-      <Card className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white border-0 w-full max-w-2xl shadow-2xl max-h-[95vh] overflow-y-auto">
-        <CardHeader className="text-center pb-4 px-4">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-2 z-50 overflow-y-auto">
+      <Card className="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white border-0 w-full max-w-sm sm:max-w-md lg:max-w-2xl shadow-2xl my-4">
+        <CardHeader className="text-center pb-3 sm:pb-4 px-3 sm:px-4">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1"></div>
-            <CardTitle className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent text-center">
+            <CardTitle className="text-xl sm:text-2xl lg:text-4xl font-bold bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent text-center flex-1">
               🎰 FORTUNE WHEEL 🎰
             </CardTitle>
             <Button
               onClick={onClose}
-              className="bg-gray-800 hover:bg-gray-700 text-white border border-gray-600 w-8 h-8 p-0 text-lg"
+              className="bg-gray-800 hover:bg-gray-700 text-white border border-gray-600 w-8 h-8 sm:w-10 sm:h-10 p-0 text-sm sm:text-lg font-bold flex-shrink-0"
               size="sm"
             >
-              ×
+              ✕
             </Button>
           </div>
-          <p className="text-lg sm:text-xl text-yellow-300 font-semibold">Stake USDT to Spin & Win!</p>
-          <div className="text-sm text-blue-300 mt-2">
+          <p className="text-sm sm:text-lg lg:text-xl text-yellow-300 font-semibold">Stake USDT to Spin & Win!</p>
+          <div className="text-xs sm:text-sm text-blue-300 mt-2">
             Balance: <span className="font-bold text-green-400">{user.balance.toFixed(2)} USDT</span>
           </div>
         </CardHeader>
 
-        <CardContent className="flex flex-col items-center space-y-4 sm:space-y-6 px-4">
+        <CardContent className="flex flex-col items-center space-y-3 sm:space-y-4 lg:space-y-6 px-3 sm:px-4">
           {/* Staking Input */}
-          <div className="w-full max-w-md bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 p-4 sm:p-6 rounded-lg">
-            <div className="text-center mb-4">
-              <h3 className="text-lg sm:text-xl font-bold text-yellow-300">💰 Stake to Spin</h3>
-              <p className="text-sm text-gray-300">Minimum stake: {minStake} USDT</p>
+          <div className="w-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/30 p-3 sm:p-4 lg:p-6 rounded-lg">
+            <div className="text-center mb-3 sm:mb-4">
+              <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-yellow-300">💰 Stake to Spin</h3>
+              <p className="text-xs sm:text-sm text-gray-300">Minimum stake: {minStake} USDT</p>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Stake Amount (USDT)</label>
+                <label className="block text-xs sm:text-sm font-medium mb-2">Stake Amount (USDT)</label>
                 <input
                   type="number"
                   value={stakeAmount}
@@ -127,15 +127,15 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
                   min={minStake}
                   max={maxStake}
                   step="0.1"
-                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white text-center text-lg sm:text-xl font-bold"
+                  className="w-full px-2 sm:px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white text-center text-sm sm:text-lg lg:text-xl font-bold"
                 />
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-1 sm:gap-2">
                 {[0.5, 1, 2, 5].filter(amount => amount <= maxStake).map(amount => (
                   <Button
                     key={amount}
                     onClick={() => setStakeAmount(amount)}
-                    className="bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 hover:bg-yellow-600/30 text-sm"
+                    className="bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 hover:bg-yellow-600/30 text-xs sm:text-sm py-1 sm:py-2"
                     size="sm"
                   >
                     {amount}
@@ -145,12 +145,12 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
             </div>
           </div>
 
-          {/* Spinning Wheel - Responsive size */}
+          {/* Spinning Wheel */}
           <div className="relative">
-            <div className="absolute inset-0 w-60 h-60 sm:w-72 sm:h-72 rounded-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-xl opacity-30 animate-pulse"></div>
-            <div className="relative w-60 h-60 sm:w-72 sm:h-72">
+            <div className="absolute inset-0 w-48 h-48 sm:w-60 sm:h-60 lg:w-72 lg:h-72 rounded-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 blur-xl opacity-30 animate-pulse"></div>
+            <div className="relative w-48 h-48 sm:w-60 sm:h-60 lg:w-72 lg:h-72">
               <div 
-                className="w-full h-full rounded-full border-4 sm:border-8 border-yellow-400 relative overflow-hidden shadow-2xl"
+                className="w-full h-full rounded-full border-4 sm:border-6 lg:border-8 border-yellow-400 relative overflow-hidden shadow-2xl"
                 style={{ 
                   transform: `rotate(${rotation}deg)`,
                   transition: isSpinning ? 'transform 4s cubic-bezier(0.23, 1, 0.32, 1)' : 'none'
@@ -174,48 +174,48 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
                       <div 
                         className="absolute text-center"
                         style={{
-                          transform: `rotate(${15}deg) translateY(-30px)`,
+                          transform: `rotate(${15}deg) translateY(-20px) sm:translateY(-30px)`,
                           textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
                         }}
                       >
                         {segment.type === 'win' ? (
                           <>
-                            <div className="text-sm sm:text-lg font-bold">{segment.amount}</div>
+                            <div className="text-xs sm:text-sm lg:text-lg font-bold">{segment.amount}</div>
                             <div className="text-xs">USDT</div>
                           </>
                         ) : (
-                          <div className="text-sm sm:text-lg font-bold">🤑</div>
+                          <div className="text-xs sm:text-sm lg:text-lg font-bold">🤑</div>
                         )}
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full border-2 sm:border-4 border-white shadow-lg flex items-center justify-center">
-                <div className="text-sm sm:text-lg">🎯</div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 sm:w-8 sm:h-8 lg:w-12 lg:h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full border-2 sm:border-3 lg:border-4 border-white shadow-lg flex items-center justify-center">
+                <div className="text-xs sm:text-sm lg:text-lg">🎯</div>
               </div>
             </div>
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 z-10">
-              <div className="w-0 h-0 border-l-4 border-r-4 border-b-8 sm:border-l-6 sm:border-r-6 sm:border-b-12 border-l-transparent border-r-transparent border-b-red-500 shadow-lg"></div>
+            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1 sm:-translate-y-2 z-10">
+              <div className="w-0 h-0 border-l-3 border-r-3 border-b-6 sm:border-l-4 sm:border-r-4 sm:border-b-8 lg:border-l-6 lg:border-r-6 lg:border-b-12 border-l-transparent border-r-transparent border-b-red-500 shadow-lg"></div>
             </div>
           </div>
 
           {/* Result Display */}
           {result && !isSpinning && (
-            <div className={`text-center p-4 sm:p-6 border-2 rounded-xl backdrop-blur-sm w-full max-w-md ${
+            <div className={`text-center p-3 sm:p-4 lg:p-6 border-2 rounded-xl backdrop-blur-sm w-full ${
               result.type === 'win' 
                 ? 'bg-gradient-to-r from-green-500/30 to-emerald-500/30 border-green-400' 
                 : 'bg-gradient-to-r from-red-500/30 to-red-600/30 border-red-400'
             }`}>
               {result.type === 'win' ? (
                 <>
-                  <div className="text-2xl sm:text-3xl font-bold text-green-400 mb-2">🎉 YOU WON! 🎉</div>
-                  <div className="text-xl sm:text-2xl font-bold text-yellow-300">+{(result.amount * stakeAmount).toFixed(2)} USDT!</div>
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-green-400 mb-2">🎉 YOU WON! 🎉</div>
+                  <div className="text-sm sm:text-xl lg:text-2xl font-bold text-yellow-300">+{(result.amount * stakeAmount).toFixed(2)} USDT!</div>
                 </>
               ) : (
                 <>
-                  <div className="text-2xl sm:text-3xl font-bold text-red-400 mb-2">💀 YOU LOST! 💀</div>
-                  <div className="text-xl sm:text-2xl font-bold text-red-300">-{stakeAmount.toFixed(2)} USDT</div>
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-red-400 mb-2">💀 YOU LOST! 💀</div>
+                  <div className="text-sm sm:text-xl lg:text-2xl font-bold text-red-300">-{stakeAmount.toFixed(2)} USDT</div>
                 </>
               )}
             </div>
@@ -225,7 +225,7 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
           <Button
             onClick={spinWheel}
             disabled={!canSpin()}
-            className={`w-full max-w-md text-lg sm:text-xl font-bold py-4 sm:py-6 transition-all duration-300 ${
+            className={`w-full text-sm sm:text-lg lg:text-xl font-bold py-3 sm:py-4 lg:py-6 transition-all duration-300 ${
               !canSpin()
                 ? 'bg-gray-600 cursor-not-allowed opacity-50' 
                 : isSpinning
@@ -234,8 +234,8 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
             }`}
           >
             {isSpinning ? (
-              <div className="flex items-center justify-center gap-3">
-                <div className="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-b-2 border-white"></div>
+              <div className="flex items-center justify-center gap-2 sm:gap-3">
+                <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 border-b-2 border-white"></div>
                 SPINNING...
               </div>
             ) : user.balance < stakeAmount ? (
@@ -248,7 +248,7 @@ const SpinningWheel: React.FC<SpinningWheelProps> = ({ user, onWin, onLose, onCl
           <Button
             onClick={onClose}
             variant="outline"
-            className="w-full max-w-md border-white/50 text-white hover:bg-white/10"
+            className="w-full border-white/50 text-white hover:bg-white/10 bg-gray-800/50 backdrop-blur-sm text-sm sm:text-base font-semibold py-2 sm:py-3"
           >
             Close Wheel
           </Button>

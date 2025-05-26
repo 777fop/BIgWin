@@ -1,4 +1,3 @@
-
 import { User, UpgradeRequest } from '@/types';
 
 const USERS_KEY = 'bigwin_users';
@@ -31,14 +30,24 @@ export class StorageService {
   }
 
   static authenticateUser(email: string, password: string): User | null {
-    // Simple password check - in real app this would be hashed
+    // Check if user exists first
+    const user = this.getUserByEmail(email);
+    if (!user) {
+      return null;
+    }
+
+    // Check admin credentials
     if (email === 'robivine99@gmail.com' && password === 'BK-24') {
-      return this.getUserByEmail(email) || this.createAdminUser(email);
+      if (!user.isAdmin) {
+        user.isAdmin = true;
+        this.saveUser(user);
+      }
+      return user;
     }
     
-    // For demo purposes, any user can login with password "BK-24"
-    if (password === 'BK-24') {
-      return this.getUserByEmail(email);
+    // For demo purposes, check password stored with user or default "BK-24"
+    if (user.password === password || password === 'BK-24') {
+      return user;
     }
     
     return null;
@@ -49,6 +58,7 @@ export class StorageService {
       id: 'admin-user',
       email,
       username: 'Admin',
+      password: 'BK-24',
       balance: 1000,
       referralCode: 'ADMIN',
       referralCount: 0,
@@ -65,7 +75,7 @@ export class StorageService {
     return adminUser;
   }
 
-  static registerUser(email: string, username: string, referralCode?: string): User {
+  static registerUser(email: string, username: string, password: string, referralCode?: string): User {
     const existingUser = this.getUserByEmail(email);
     if (existingUser) {
       throw new Error('User already exists');
@@ -75,6 +85,7 @@ export class StorageService {
       id: Math.random().toString(36).substr(2, 9),
       email,
       username: username || email.split('@')[0],
+      password: password, // Store password for demo purposes
       balance: 0,
       referralCode: Math.random().toString(36).substr(2, 8).toUpperCase(),
       referralCount: 0,

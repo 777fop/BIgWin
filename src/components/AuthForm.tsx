@@ -26,7 +26,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
 
     try {
       if (isLogin) {
-        // Login
+        // Login - fix the authentication issue
         const user = StorageService.authenticateUser(email, password);
         if (user) {
           StorageService.setCurrentUser(user);
@@ -37,7 +37,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
       } else {
         // Registration
         try {
-          const newUser = StorageService.registerUser(email, username, referralCode);
+          const newUser = StorageService.registerUser(email, username, password, referralCode);
           StorageService.setCurrentUser(newUser);
           onLogin(newUser);
         } catch (err) {
@@ -52,20 +52,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
-      <Card className="w-full max-w-md crypto-card text-white border-0">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold neon-text">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-2 sm:p-4">
+      <Card className="w-full max-w-sm sm:max-w-md crypto-card text-white border-0">
+        <CardHeader className="text-center px-4 sm:px-6">
+          <CardTitle className="text-2xl sm:text-3xl font-bold neon-text">
             💰 CryptoEarn Pro
           </CardTitle>
-          <p className="text-yellow-300 font-semibold">
+          <p className="text-yellow-300 font-semibold text-sm sm:text-base">
             {isLogin ? 'Welcome Back!' : 'Join & Get 1 USDT Bonus!'}
           </p>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <CardContent className="px-4 sm:px-6">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {error && (
-              <div className="bg-red-500/20 border border-red-500/30 p-3 rounded text-red-300 text-sm">
+              <div className="bg-red-500/20 border border-red-500/30 p-2 sm:p-3 rounded text-red-300 text-xs sm:text-sm">
                 {error}
               </div>
             )}
@@ -76,7 +76,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="bg-white/10 border-white/20 text-white placeholder-white/60"
+              className="bg-white/10 border-white/20 text-white placeholder-white/60 text-sm sm:text-base h-10 sm:h-12"
             />
             
             {!isLogin && (
@@ -85,7 +85,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
                 placeholder="Username (optional)"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder-white/60"
+                className="bg-white/10 border-white/20 text-white placeholder-white/60 text-sm sm:text-base h-10 sm:h-12"
               />
             )}
             
@@ -95,7 +95,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="bg-white/10 border-white/20 text-white placeholder-white/60"
+              className="bg-white/10 border-white/20 text-white placeholder-white/60 text-sm sm:text-base h-10 sm:h-12"
             />
             
             {!isLogin && (
@@ -104,14 +104,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
                 placeholder="Referral Code (optional)"
                 value={referralCode}
                 onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                className="bg-white/10 border-white/20 text-white placeholder-white/60"
+                className="bg-white/10 border-white/20 text-white placeholder-white/60 text-sm sm:text-base h-10 sm:h-12"
               />
             )}
             
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full gold-gradient text-black font-bold text-lg py-3 hover:scale-105 transition-transform disabled:opacity-50"
+              className="w-full gold-gradient text-black font-bold text-sm sm:text-lg py-2 sm:py-3 hover:scale-105 transition-transform disabled:opacity-50"
             >
               {loading ? (
                 <div className="flex items-center gap-2">
@@ -124,32 +124,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
             </Button>
           </form>
           
-          <div className="text-center mt-4">
+          <div className="text-center mt-3 sm:mt-4">
             <button
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
               }}
-              className="text-yellow-300 hover:text-yellow-100 underline"
+              className="text-yellow-300 hover:text-yellow-100 underline text-sm sm:text-base"
             >
               {isLogin ? "Don't have an account? Sign up!" : 'Already have an account? Login!'}
             </button>
           </div>
           
           {!isLogin && (
-            <div className="mt-4 p-3 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
-              <p className="text-yellow-200 text-sm text-center">
+            <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
+              <p className="text-yellow-200 text-xs sm:text-sm text-center">
                 🎁 Limited Time: Get 1 USDT signup bonus + 5 USDT per referral!
               </p>
             </div>
           )}
-
-          <div className="mt-4 p-3 bg-blue-500/20 rounded-lg border border-blue-500/30">
-            <p className="text-blue-200 text-xs text-center">
-              Demo credentials: Any email with password "BK-24"<br/>
-              Admin access: robivine99@gmail.com / BK-24
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

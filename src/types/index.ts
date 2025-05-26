@@ -1,8 +1,8 @@
-
 export interface User {
   id: string;
   email: string;
   username: string;
+  password?: string; // Add password field for demo purposes
   balance: number;
   referralCode: string;
   referralCount: number;
