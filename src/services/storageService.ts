@@ -3,6 +3,16 @@ import { User, UpgradeRequest } from '@/types';
 const USERS_KEY = 'bigwin_users';
 const UPGRADE_REQUESTS_KEY = 'bigwin_upgrade_requests';
 const CURRENT_USER_KEY = 'bigwin_current_user';
+const PASSWORD_RESET_REQUESTS_KEY = 'bigwin_password_reset_requests';
+
+export interface PasswordResetRequest {
+  id: string;
+  email: string;
+  username?: string;
+  requestDate: string;
+  status: 'pending' | 'approved' | 'rejected';
+  responseDate?: string;
+}
 
 export class StorageService {
   // User management
@@ -118,6 +128,62 @@ export class StorageService {
       referrer.totalEarned += 5;
       referrer.referralCount += 1;
       this.saveUser(referrer);
+    }
+  }
+
+  // Password reset management
+  static createPasswordResetRequest(email: string): PasswordResetRequest {
+    const user = this.getUserByEmail(email);
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const request: PasswordResetRequest = {
+      id: Math.random().toString(36).substr(2, 9),
+      email,
+      username: user.username,
+      requestDate: new Date().toISOString(),
+      status: 'pending'
+    };
+
+    const requests = this.getAllPasswordResetRequests();
+    requests.push(request);
+    localStorage.setItem(PASSWORD_RESET_REQUESTS_KEY, JSON.stringify(requests));
+    return request;
+  }
+
+  static getAllPasswordResetRequests(): PasswordResetRequest[] {
+    const requests = localStorage.getItem(PASSWORD_RESET_REQUESTS_KEY);
+    return requests ? JSON.parse(requests) : [];
+  }
+
+  static approvePasswordReset(requestId: string, newPassword: string = 'BK-24'): void {
+    const requests = this.getAllPasswordResetRequests();
+    const request = requests.find(r => r.id === requestId);
+    
+    if (request) {
+      request.status = 'approved';
+      request.responseDate = new Date().toISOString();
+      
+      // Update user password
+      const user = this.getUserByEmail(request.email);
+      if (user) {
+        user.password = newPassword;
+        this.saveUser(user);
+      }
+      
+      localStorage.setItem(PASSWORD_RESET_REQUESTS_KEY, JSON.stringify(requests));
+    }
+  }
+
+  static rejectPasswordReset(requestId: string): void {
+    const requests = this.getAllPasswordResetRequests();
+    const request = requests.find(r => r.id === requestId);
+    
+    if (request) {
+      request.status = 'rejected';
+      request.responseDate = new Date().toISOString();
+      localStorage.setItem(PASSWORD_RESET_REQUESTS_KEY, JSON.stringify(requests));
     }
   }
 
