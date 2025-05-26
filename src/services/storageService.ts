@@ -124,8 +124,8 @@ export class StorageService {
     const referrer = users.find(u => u.referralCode === referralCode);
     
     if (referrer) {
-      referrer.balance += 5;
-      referrer.totalEarned += 5;
+      referrer.balance += 1;
+      referrer.totalEarned += 1;
       referrer.referralCount += 1;
       this.saveUser(referrer);
     }

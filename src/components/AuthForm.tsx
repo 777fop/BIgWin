@@ -193,7 +193,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
           {!isLogin && !isResetPassword && (
             <div className="mt-2 sm:mt-3 md:mt-4 p-2 sm:p-3 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
               <p className="text-yellow-200 text-xs sm:text-sm text-center">
-                🎁 Limited Time: Get 1 USDT signup bonus + 5 USDT per referral!
+                🎁 Limited Time: Get 1 USDT signup bonus + 1 USDT per referral!
               </p>
             </div>
           )}
