@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, UpgradeRequest } from '@/types';
 import { StorageService, PasswordResetRequest } from '@/services/storageService';
-import { LogOut } from 'lucide-react';
+import { LogOut, Users } from 'lucide-react';
+import UserManagement from './UserManagement';
 
 interface AdminDashboardProps {
   user: User;
@@ -16,6 +16,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUserUpdate, onL
   const [upgradeRequests, setUpgradeRequests] = useState<UpgradeRequest[]>([]);
   const [passwordResetRequests, setPasswordResetRequests] = useState<PasswordResetRequest[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
   useEffect(() => {
     loadRequests();
@@ -31,6 +33,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUserUpdate, onL
     setPasswordResetRequests(passwordResets.sort((a, b) => 
       new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime()
     ));
+
+    const users = StorageService.getAllUsers();
+    setAllUsers(users);
   };
 
   const handleApproveUpgrade = (requestId: string) => {
@@ -71,45 +76,64 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUserUpdate, onL
               <CardTitle className="text-2xl sm:text-3xl font-bold neon-text">
                 👑 Admin Dashboard
               </CardTitle>
-              <p className="text-gray-300 text-sm sm:text-base">Manage user requests</p>
+              <p className="text-gray-300 text-sm sm:text-base">Manage user requests and accounts</p>
             </div>
-            <Button
-              onClick={onLogout}
-              className="bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base"
-              size="sm"
-            >
-              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-              Logout
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowUserManagement(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
+                size="sm"
+              >
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                View Users
+              </Button>
+              <Button
+                onClick={onLogout}
+                className="bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base"
+                size="sm"
+              >
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </CardHeader>
         </Card>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6">
-          <Card className="bg-yellow-600 text-white border-0">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
+          <Card className="bg-green-600 text-white border-0">
             <CardHeader className="text-center pb-1 sm:pb-2 px-2 sm:px-4">
-              <CardTitle className="text-sm sm:text-lg">⏳ Pending Upgrades</CardTitle>
+              <CardTitle className="text-xs sm:text-lg">👥 Total Users</CardTitle>
             </CardHeader>
             <CardContent className="text-center px-2 sm:px-4">
-              <div className="text-xl sm:text-3xl font-bold">{pendingUpgrades.length}</div>
+              <div className="text-lg sm:text-3xl font-bold">{allUsers.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-yellow-600 text-white border-0">
+            <CardHeader className="text-center pb-1 sm:pb-2 px-2 sm:px-4">
+              <CardTitle className="text-xs sm:text-lg">⏳ Pending Upgrades</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center px-2 sm:px-4">
+              <div className="text-lg sm:text-3xl font-bold">{pendingUpgrades.length}</div>
             </CardContent>
           </Card>
 
           <Card className="bg-blue-600 text-white border-0">
             <CardHeader className="text-center pb-1 sm:pb-2 px-2 sm:px-4">
-              <CardTitle className="text-sm sm:text-lg">🔑 Password Resets</CardTitle>
+              <CardTitle className="text-xs sm:text-lg">🔑 Password Resets</CardTitle>
             </CardHeader>
             <CardContent className="text-center px-2 sm:px-4">
-              <div className="text-xl sm:text-3xl font-bold">{pendingPasswordResets.length}</div>
+              <div className="text-lg sm:text-3xl font-bold">{pendingPasswordResets.length}</div>
             </CardContent>
           </Card>
 
           <Card className="bg-green-600 text-white border-0">
             <CardHeader className="text-center pb-1 sm:pb-2 px-2 sm:px-4">
-              <CardTitle className="text-sm sm:text-lg">✅ Approved</CardTitle>
+              <CardTitle className="text-xs sm:text-lg">✅ Approved</CardTitle>
             </CardHeader>
             <CardContent className="text-center px-2 sm:px-4">
-              <div className="text-xl sm:text-3xl font-bold">
+              <div className="text-lg sm:text-3xl font-bold">
                 {upgradeRequests.filter(r => r.status === 'approved').length}
               </div>
             </CardContent>
@@ -117,10 +141,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUserUpdate, onL
 
           <Card className="bg-red-600 text-white border-0">
             <CardHeader className="text-center pb-1 sm:pb-2 px-2 sm:px-4">
-              <CardTitle className="text-sm sm:text-lg">❌ Rejected</CardTitle>
+              <CardTitle className="text-xs sm:text-lg">❌ Rejected</CardTitle>
             </CardHeader>
             <CardContent className="text-center px-2 sm:px-4">
-              <div className="text-xl sm:text-3xl font-bold">
+              <div className="text-lg sm:text-3xl font-bold">
                 {upgradeRequests.filter(r => r.status === 'rejected').length}
               </div>
             </CardContent>
@@ -259,6 +283,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onUserUpdate, onL
           </Card>
         )}
       </div>
+
+      {/* User Management Modal */}
+      {showUserManagement && (
+        <UserManagement 
+          onClose={() => setShowUserManagement(false)}
+          onRefresh={() => setRefreshKey(prev => prev + 1)}
+        />
+      )}
     </div>
   );
 };

@@ -131,6 +131,36 @@ export class StorageService {
     }
   }
 
+  // New method to remove user
+  static removeUser(userId: string): boolean {
+    const users = this.getAllUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+    
+    if (userIndex >= 0) {
+      users.splice(userIndex, 1);
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      
+      // Also remove user's upgrade requests and password reset requests
+      this.removeUserUpgradeRequests(userId);
+      this.removeUserPasswordResetRequests(users[userIndex]?.email);
+      
+      return true;
+    }
+    return false;
+  }
+
+  static removeUserUpgradeRequests(userId: string): void {
+    const requests = this.getAllUpgradeRequests();
+    const filteredRequests = requests.filter(r => r.userId !== userId);
+    localStorage.setItem(UPGRADE_REQUESTS_KEY, JSON.stringify(filteredRequests));
+  }
+
+  static removeUserPasswordResetRequests(email: string): void {
+    const requests = this.getAllPasswordResetRequests();
+    const filteredRequests = requests.filter(r => r.email !== email);
+    localStorage.setItem(PASSWORD_RESET_REQUESTS_KEY, JSON.stringify(filteredRequests));
+  }
+
   // Password reset management
   static createPasswordResetRequest(email: string): PasswordResetRequest {
     const user = this.getUserByEmail(email);
