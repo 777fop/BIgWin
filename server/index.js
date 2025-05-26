@@ -13,15 +13,14 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const pool = new Pool({
-  user: "bigwin",
-  host: "dpg-d0q55m8dl3ps73bb4420-a.oregon-postgres.render.com",
-  database: "bigwin_db",
-  password: "MkaKasRvZ5VkPD3ENlbc68smlazGwrxH",
-  port: 5432,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+    user: "bigwin",
+    host: "dpg-d0q55m8dl3ps73bb4420-a.oregon-postgres.render.com",
+    database: "bigwin_db",
+    password: "MkaKasRvZ5VkPD3ENlbc68smlazGwrxH",
+    port: 5432,
+    ssl: { rejectUnauthorized: false }, // important for Render Postgres
+  });
+  
 
 
 // Create tables if not exist
