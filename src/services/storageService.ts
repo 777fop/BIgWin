@@ -1,7 +1,9 @@
-import { User, UpgradeRequest } from '@/types';
+import { User, UpgradeRequest, DepositRequest, WithdrawalRequest } from '@/types';
 
 const USERS_KEY = 'bigwin_users';
 const UPGRADE_REQUESTS_KEY = 'bigwin_upgrade_requests';
+const DEPOSIT_REQUESTS_KEY = 'bigwin_deposit_requests';
+const WITHDRAWAL_REQUESTS_KEY = 'bigwin_withdrawal_requests';
 const CURRENT_USER_KEY = 'bigwin_current_user';
 const PASSWORD_RESET_REQUESTS_KEY = 'bigwin_password_reset_requests';
 
@@ -40,13 +42,11 @@ export class StorageService {
   }
 
   static authenticateUser(email: string, password: string): User | null {
-    // Check if user exists first
     const user = this.getUserByEmail(email);
     if (!user) {
       return null;
     }
 
-    // Check admin credentials
     if (email === 'robivine99@gmail.com' && password === 'BK-24') {
       if (!user.isAdmin) {
         user.isAdmin = true;
@@ -55,7 +55,6 @@ export class StorageService {
       return user;
     }
     
-    // For demo purposes, check password stored with user or default "BK-24"
     if (user.password === password || password === 'BK-24') {
       return user;
     }
@@ -95,7 +94,7 @@ export class StorageService {
       id: Math.random().toString(36).substr(2, 9),
       email,
       username: username || email.split('@')[0],
-      password: password, // Store password for demo purposes
+      password: password,
       balance: 0,
       referralCode: Math.random().toString(36).substr(2, 8).toUpperCase(),
       referralCount: 0,
@@ -111,7 +110,6 @@ export class StorageService {
 
     this.saveUser(newUser);
 
-    // Handle referral bonus
     if (referralCode) {
       this.handleReferralBonus(referralCode);
     }
@@ -140,7 +138,6 @@ export class StorageService {
       users.splice(userIndex, 1);
       localStorage.setItem(USERS_KEY, JSON.stringify(users));
       
-      // Also remove user's upgrade requests and password reset requests
       this.removeUserUpgradeRequests(userId);
       this.removeUserPasswordResetRequests(users[userIndex]?.email);
       
@@ -195,7 +192,6 @@ export class StorageService {
       request.status = 'approved';
       request.responseDate = new Date().toISOString();
       
-      // Update user password
       const user = this.getUserByEmail(request.email);
       if (user) {
         user.password = newPassword;
@@ -271,6 +267,23 @@ export class StorageService {
     return request;
   }
 
+  static cancelUpgradeRequest(requestId: string): void {
+    const requests = this.getAllUpgradeRequests();
+    const request = requests.find(r => r.id === requestId);
+    
+    if (request && request.status === 'pending') {
+      request.status = 'cancelled';
+      request.responseDate = new Date().toISOString();
+      this.saveUpgradeRequest(request);
+
+      const user = this.getUserByEmail(request.email);
+      if (user) {
+        user.pendingUpgrade = undefined;
+        this.saveUser(user);
+      }
+    }
+  }
+
   static approveUpgradeRequest(requestId: string): void {
     const requests = this.getAllUpgradeRequests();
     const request = requests.find(r => r.id === requestId);
@@ -280,7 +293,6 @@ export class StorageService {
       request.responseDate = new Date().toISOString();
       this.saveUpgradeRequest(request);
 
-      // Update user plan
       const user = this.getUserByEmail(request.email);
       if (user) {
         user.plan = request.planId as 'basic' | 'premium' | 'vip';
@@ -299,12 +311,121 @@ export class StorageService {
       request.responseDate = new Date().toISOString();
       this.saveUpgradeRequest(request);
 
-      // Clear user pending upgrade
       const user = this.getUserByEmail(request.email);
       if (user) {
         user.pendingUpgrade = undefined;
         this.saveUser(user);
       }
+    }
+  }
+
+  // Deposit requests management
+  static createDepositRequest(user: User, amount: number, walletAddress: string, transactionHash?: string): DepositRequest {
+    const request: DepositRequest = {
+      id: Math.random().toString(36).substr(2, 9),
+      userId: user.id,
+      username: user.username,
+      email: user.email,
+      amount,
+      walletAddress,
+      transactionHash,
+      status: 'pending',
+      requestDate: new Date().toISOString()
+    };
+
+    const requests = this.getAllDepositRequests();
+    requests.push(request);
+    localStorage.setItem(DEPOSIT_REQUESTS_KEY, JSON.stringify(requests));
+    return request;
+  }
+
+  static getAllDepositRequests(): DepositRequest[] {
+    const requests = localStorage.getItem(DEPOSIT_REQUESTS_KEY);
+    return requests ? JSON.parse(requests) : [];
+  }
+
+  static approveDepositRequest(requestId: string): void {
+    const requests = this.getAllDepositRequests();
+    const request = requests.find(r => r.id === requestId);
+    
+    if (request) {
+      request.status = 'approved';
+      request.responseDate = new Date().toISOString();
+      
+      const user = this.getUserByEmail(request.email);
+      if (user) {
+        user.balance += request.amount;
+        user.totalEarned += request.amount;
+        this.saveUser(user);
+      }
+      
+      localStorage.setItem(DEPOSIT_REQUESTS_KEY, JSON.stringify(requests));
+    }
+  }
+
+  static rejectDepositRequest(requestId: string, reason?: string): void {
+    const requests = this.getAllDepositRequests();
+    const request = requests.find(r => r.id === requestId);
+    
+    if (request) {
+      request.status = 'rejected';
+      request.responseDate = new Date().toISOString();
+      if (reason) request.reason = reason;
+      localStorage.setItem(DEPOSIT_REQUESTS_KEY, JSON.stringify(requests));
+    }
+  }
+
+  // Withdrawal requests management
+  static createWithdrawalRequest(user: User, amount: number, walletAddress: string): WithdrawalRequest {
+    const request: WithdrawalRequest = {
+      id: Math.random().toString(36).substr(2, 9),
+      userId: user.id,
+      username: user.username,
+      email: user.email,
+      amount,
+      walletAddress,
+      status: 'pending',
+      requestDate: new Date().toISOString()
+    };
+
+    const requests = this.getAllWithdrawalRequests();
+    requests.push(request);
+    localStorage.setItem(WITHDRAWAL_REQUESTS_KEY, JSON.stringify(requests));
+    return request;
+  }
+
+  static getAllWithdrawalRequests(): WithdrawalRequest[] {
+    const requests = localStorage.getItem(WITHDRAWAL_REQUESTS_KEY);
+    return requests ? JSON.parse(requests) : [];
+  }
+
+  static approveWithdrawalRequest(requestId: string): void {
+    const requests = this.getAllWithdrawalRequests();
+    const request = requests.find(r => r.id === requestId);
+    
+    if (request) {
+      request.status = 'approved';
+      request.responseDate = new Date().toISOString();
+      
+      const user = this.getUserByEmail(request.email);
+      if (user && user.balance >= request.amount) {
+        user.balance -= request.amount;
+        this.saveUser(user);
+      }
+      
+      localStorage.setItem(WITHDRAWAL_REQUESTS_KEY, JSON.stringify(requests));
+    }
+  }
+
+  static rejectWithdrawalRequest(requestId: string, reason?: string): void {
+    const requests = this.getAllWithdrawalRequests();
+    const request = requests.find(r => r.id === requestId);
+    
+    if (request) {
+      request.status = 'rejected';
+      request.responseDate = new Date().toISOString();
+      if (reason) request.reason = reason;
+      localStorage.setItem(WITHDRAWAL_REQUESTS_KEY, JSON.stringify(requests));
     }
   }
 }

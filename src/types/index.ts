@@ -1,8 +1,9 @@
+
 export interface User {
   id: string;
   email: string;
   username: string;
-  password?: string; // Add password field for demo purposes
+  password?: string;
   balance: number;
   referralCode: string;
   referralCount: number;
@@ -14,7 +15,7 @@ export interface User {
     planId: string;
     amount: number;
     transactionHash?: string;
-    status: 'pending' | 'confirmed' | 'rejected';
+    status: 'pending' | 'confirmed' | 'rejected' | 'cancelled';
     requestDate: string;
   };
   lastSpinDate: string | null;
@@ -52,7 +53,34 @@ export interface UpgradeRequest {
   planName: string;
   amount: number;
   transactionHash?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  requestDate: string;
+  responseDate?: string;
+}
+
+export interface DepositRequest {
+  id: string;
+  userId: string;
+  username: string;
+  email: string;
+  amount: number;
+  walletAddress: string;
+  transactionHash?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  requestDate: string;
+  responseDate?: string;
+  reason?: string;
+}
+
+export interface WithdrawalRequest {
+  id: string;
+  userId: string;
+  username: string;
+  email: string;
+  amount: number;
+  walletAddress: string;
   status: 'pending' | 'approved' | 'rejected';
   requestDate: string;
   responseDate?: string;
+  reason?: string;
 }

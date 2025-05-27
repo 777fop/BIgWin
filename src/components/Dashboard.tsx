@@ -7,7 +7,10 @@ import WithdrawalForm from './WithdrawalForm';
 import TransactionHistory from './TransactionHistory';
 import SpinningWheel from './SpinningWheel';
 import AdminPanel from './AdminPanel';
+import DepositForm from './DepositForm';
+import AviatorGame from './AviatorGame';
 import { LogOut } from 'lucide-react';
+import { StorageService } from '@/services/storageService';
 
 interface DashboardProps {
   user: User;
@@ -21,11 +24,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
   const [showHistory, setShowHistory] = useState(false);
   const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showDeposit, setShowDeposit] = useState(false);
+  const [showAviator, setShowAviator] = useState(false);
   const [successStories, setSuccessStories] = useState<string[]>([]);
 
-  
-
-  // Real names for success stories
   const realNames = [
     'Emmanuel', 'Richard', 'Stephanie', 'Michael', 'Sarah', 'David', 'Jessica', 
     'Andrew', 'Maria', 'Robert', 'Lisa', 'James', 'Ashley', 'Christopher', 
@@ -36,7 +38,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
   const withdrawalAmounts = [50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1200, 1500];
   const referralAmounts = [25, 50, 75, 100, 125, 150];
 
-  // Generate success stories
+  // Real names for success stories
   useEffect(() => {
     const generateStory = () => {
       const name = realNames[Math.floor(Math.random() * realNames.length)];
@@ -51,22 +53,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       }
     };
 
-  // Start with 100 stories
-  const initialStories = Array.from({ length: 100 }, generateStory);
-  setSuccessStories(initialStories);
+    // Start with 100 stories
+    const initialStories = Array.from({ length: 100 }, generateStory);
+    setSuccessStories(initialStories);
 
-  const interval = setInterval(() => {
-    setSuccessStories(prev => {
-      const newStory = generateStory();
-      const updated = [newStory, ...prev];
-      return updated.slice(0, 600); // Keep only the last 500
-    });
-  }, 14000); // Add every 5 seconds
+    const interval = setInterval(() => {
+      setSuccessStories(prev => {
+        const newStory = generateStory();
+        const updated = [newStory, ...prev];
+        return updated.slice(0, 600); // Keep only the last 500
+      });
+    }, 14000); // Add every 5 seconds
 
-  return () => clearInterval(interval);
-}, []);
+    return () => clearInterval(interval);
+  }, []);
 
- 
   // Handle registration bonus
   useEffect(() => {
     if (user.hasRegistrationBonus && user.balance === 0) {
@@ -98,18 +99,18 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       name: 'Premium',
       price: 10,
       dailyClaim: 3,
-      withdrawalMinimum: 10,
+      withdrawalMinimum: 5,
       color: 'bg-blue-600',
-      features: ['3 USDT daily claim', 'Priority support', '3x referral bonus', '3 wheel spins/day','withdrawalMinimum 10']
+      features: ['3 USDT daily claim', 'Priority support', '3x referral bonus', '3 wheel spins/day','withdrawalMinimum 5']
     },
     {
       id: 'vip',
       name: 'VIP',
       price: 20,
       dailyClaim: 7,
-      withdrawalMinimum: 10,
+      withdrawalMinimum: 5,
       color: 'bg-purple-600',
-      features: ['6 USDT daily claim', 'VIP support', '5x referral bonus', 'Unlimited wheel spins','withdrawalMinimum 10']
+      features: ['6 USDT daily claim', 'VIP support', '5x referral bonus', 'Unlimited wheel spins','withdrawalMinimum 5']
     }
   ];
 
@@ -172,6 +173,22 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
     alert('Your account will be upgraded once payment is confirmed.');
   };
 
+  const handleCancelUpgrade = () => {
+    if (user.pendingUpgrade) {
+      const upgradeRequests = StorageService.getAllUpgradeRequests();
+      const userRequest = upgradeRequests.find(r => 
+        r.userId === user.id && r.status === 'pending'
+      );
+      
+      if (userRequest) {
+        StorageService.cancelUpgradeRequest(userRequest.id);
+        const updatedUser = { ...user, pendingUpgrade: undefined };
+        onUserUpdate(updatedUser);
+        alert('Upgrade request cancelled successfully.');
+      }
+    }
+  };
+
   const handleSpinWin = (amount: number) => {
     const updatedUser = {
       ...user,
@@ -179,7 +196,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       totalEarned: user.totalEarned + amount
     };
     onUserUpdate(updatedUser);
-    setShowSpinWheel(false);
   };
 
   const handleSpinLose = (amount: number) => {
@@ -188,7 +204,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       balance: user.balance - amount
     };
     onUserUpdate(updatedUser);
-    setShowSpinWheel(false);
+  };
+
+  const handleAviatorWin = (amount: number) => {
+    const updatedUser = {
+      ...user,
+      balance: user.balance + amount,
+      totalEarned: user.totalEarned + amount
+    };
+    onUserUpdate(updatedUser);
+  };
+
+  const handleAviatorLose = (amount: number) => {
+    const updatedUser = {
+      ...user,
+      balance: user.balance - amount
+    };
+    onUserUpdate(updatedUser);
   };
 
   const canClaimToday = () => {
@@ -199,118 +231,136 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-2 sm:p-4">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
         {/* Header */}
         <Card className="crypto-card text-white border-0">
-          <CardHeader className="text-center relative">
+          <CardHeader className="text-center relative px-4 sm:px-6">
             <Button
               onClick={onLogout}
-              className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white"
+              className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm"
               size="sm"
             >
-              <LogOut className="h-4 w-4 mr-2" />
+              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Logout
             </Button>
-            <CardTitle className="text-4xl font-bold neon-text">
+            <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold neon-text pr-16 sm:pr-20">
               Welcome back, {user.username}! 🚀
             </CardTitle>
-            <p className="text-gray-300">Your crypto journey starts here</p>
+            <p className="text-gray-300 text-sm sm:text-base">Your crypto journey starts here</p>
+            
+            {/* Upgrade Status */}
             {user.pendingUpgrade && (
               <div className="bg-yellow-600/20 border border-yellow-500 p-3 rounded mt-4">
-                <p className="text-yellow-300 font-semibold">
-                  ⏳ Upgrade to {user.pendingUpgrade.planId} pending confirmation
-                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                  <p className="text-yellow-300 font-semibold text-sm sm:text-base">
+                    ⏳ Upgrade to {user.pendingUpgrade.planId} pending confirmation
+                  </p>
+                  <Button
+                    onClick={handleCancelUpgrade}
+                    className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm"
+                    size="sm"
+                  >
+                    Cancel Request
+                  </Button>
+                </div>
               </div>
             )}
           </CardHeader>
         </Card>
 
         {/* Balance Cards */}
-        <div className="grid md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
           <Card className="gold-gradient text-black border-0">
-            <CardHeader className="text-center">
-              <CardTitle className="text-lg">💰 Balance</CardTitle>
+            <CardHeader className="text-center pb-2 px-2 sm:px-4">
+              <CardTitle className="text-sm sm:text-lg">💰 Balance</CardTitle>
             </CardHeader>
-            <CardContent className="text-center">
-              <div className="text-3xl font-bold">{user.balance.toFixed(2)} USDT</div>
+            <CardContent className="text-center px-2 sm:px-4">
+              <div className="text-lg sm:text-2xl md:text-3xl font-bold">{user.balance.toFixed(2)} USDT</div>
             </CardContent>
           </Card>
 
           <Card className="bg-green-600 text-white border-0">
-            <CardHeader className="text-center">
-              <CardTitle className="text-lg">📈 Total Earned</CardTitle>
+            <CardHeader className="text-center pb-2 px-2 sm:px-4">
+              <CardTitle className="text-sm sm:text-lg">📈 Total Earned</CardTitle>
             </CardHeader>
-            <CardContent className="text-center">
-              <div className="text-3xl font-bold">{user.totalEarned.toFixed(2)} USDT</div>
+            <CardContent className="text-center px-2 sm:px-4">
+              <div className="text-lg sm:text-2xl md:text-3xl font-bold">{user.totalEarned.toFixed(2)} USDT</div>
             </CardContent>
           </Card>
 
           <Card className="bg-blue-600 text-white border-0">
-            <CardHeader className="text-center">
-              <CardTitle className="text-lg">👥 Referrals</CardTitle>
+            <CardHeader className="text-center pb-2 px-2 sm:px-4">
+              <CardTitle className="text-sm sm:text-lg">👥 Referrals</CardTitle>
             </CardHeader>
-            <CardContent className="text-center">
-              <div className="text-3xl font-bold">{user.referralCount}</div>
+            <CardContent className="text-center px-2 sm:px-4">
+              <div className="text-lg sm:text-2xl md:text-3xl font-bold">{user.referralCount}</div>
             </CardContent>
           </Card>
 
           <Card className="bg-purple-600 text-white border-0">
-            <CardHeader className="text-center">
-              <CardTitle className="text-lg">⭐ Plan</CardTitle>
+            <CardHeader className="text-center pb-2 px-2 sm:px-4">
+              <CardTitle className="text-sm sm:text-lg">⭐ Plan</CardTitle>
             </CardHeader>
-            <CardContent className="text-center">
-              <div className="text-2xl font-bold">{currentPlan.name}</div>
+            <CardContent className="text-center px-2 sm:px-4">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">{currentPlan.name}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Action Buttons */}
-        <div className="grid md:grid-cols-5 gap-4">
+        {/* Main Action Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
           <Button 
             onClick={handleClaim}
             disabled={!canClaimToday()}
-            className="gold-gradient text-black font-bold text-lg py-6 hover:scale-105 transition-transform"
+            className="gold-gradient text-black font-bold text-xs sm:text-base py-4 sm:py-6 hover:scale-105 transition-transform"
           >
             {canClaimToday() ? `💎 CLAIM ${currentPlan.dailyClaim} USDT` : '✅ CLAIMED TODAY'}
           </Button>
           
           <Button 
             onClick={() => setShowSpinWheel(true)}
-            className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold text-lg py-6 hover:scale-105 transition-transform"
+            className="bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold text-xs sm:text-base py-4 sm:py-6 hover:scale-105 transition-transform"
           >
             🎰 SPIN WHEEL
           </Button>
 
           <Button 
+            onClick={() => setShowAviator(true)}
+            className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-xs sm:text-base py-4 sm:py-6 hover:scale-105 transition-transform"
+          >
+            ✈️ AVIATOR
+          </Button>
+
+          <Button 
+            onClick={() => setShowDeposit(true)}
+            className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-xs sm:text-base py-4 sm:py-6 hover:scale-105 transition-transform"
+          >
+            💰 DEPOSIT
+          </Button>
+
+          <Button 
             onClick={() => setShowUpgrade(true)}
             disabled={!!user.pendingUpgrade}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold text-lg py-6 hover:scale-105 transition-transform disabled:opacity-50"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold text-xs sm:text-base py-4 sm:py-6 hover:scale-105 transition-transform disabled:opacity-50"
           >
             ⬆️ UPGRADE
           </Button>
 
           <Button 
             onClick={() => setShowWithdrawal(true)}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-lg py-6 hover:scale-105 transition-transform"
+            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-xs sm:text-base py-4 sm:py-6 hover:scale-105 transition-transform"
           >
             💸 WITHDRAW
           </Button>
-
-          <Button 
-            onClick={() => setShowHistory(true)}
-            className="bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold text-lg py-6 hover:scale-105 transition-transform"
-          >
-            📊 HISTORY
-          </Button>
         </div>
 
-        {/* Admin Panel Access (hidden for regular users) */}
+        {/* Admin Panel Access */}
         {user.isAdmin && (
           <div className="text-center">
             <Button 
               onClick={() => setShowAdminPanel(true)}
-              className="bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-bold text-lg py-3 px-6 hover:scale-105 transition-transform"
+              className="bg-gradient-to-r from-yellow-600 to-orange-600 text-white font-bold text-base sm:text-lg py-3 px-6 hover:scale-105 transition-transform"
             >
               👑 ADMIN PANEL
             </Button>
@@ -319,24 +369,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
 
         {/* Referral Section */}
         <Card className="crypto-card text-white border-0">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold neon-text">🔗 Invite Friends & Earn More!</CardTitle>
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-xl sm:text-2xl font-bold neon-text">🔗 Invite Friends & Earn More!</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-300">
+          <CardContent className="space-y-4 px-4 sm:px-6">
+            <p className="text-gray-300 text-sm sm:text-base">
               Share your referral code and earn bonus USDT for every friend who joins!
             </p>
-            <div className="flex items-center gap-4">
-              <div className="flex-1 bg-black/30 p-3 rounded border border-yellow-500">
-                <span className="text-yellow-400 font-mono text-lg">{user.referralCode}</span>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex-1 w-full bg-black/30 p-3 rounded border border-yellow-500">
+                <span className="text-yellow-400 font-mono text-base sm:text-lg">{user.referralCode}</span>
               </div>
               <Button 
                 onClick={() => {
-                  // navigator.clipboard.writeText(`https://bigwin-yq75.onrender.com/ Use my referral code: ${user.referralCode}`);
                   navigator.clipboard.writeText(`https://bigwin-yq75.onrender.com/ Use my referral code: ${user.referralCode}`);
                   alert('Referral message copied to clipboard!');
                 }}
-                className="gold-gradient text-black font-bold"
+                className="gold-gradient text-black font-bold w-full sm:w-auto"
               >
                 📋 COPY LINK
               </Button>
@@ -349,10 +398,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
 
         {/* Real-time Success Stories */}
         <Card className="bg-green-600/20 border-green-600/30 text-white overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-green-400">🏆 Live Success Stories</CardTitle>
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-lg sm:text-xl font-bold text-green-400">🏆 Live Success Stories</CardTitle>
           </CardHeader>
-          <CardContent className="relative h-32">
+          <CardContent className="relative h-32 px-4 sm:px-6">
             <div className="absolute inset-0 overflow-hidden">
               <div className="animate-scroll space-y-2">
                 {successStories.map((story, index) => (
@@ -387,6 +436,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
         />
       )}
 
+      {showDeposit && (
+        <DepositForm
+          user={user}
+          onClose={() => setShowDeposit(false)}
+          onSuccess={() => window.location.reload()}
+        />
+      )}
+
       {showHistory && (
         <TransactionHistory 
           transactions={mockTransactions}
@@ -400,6 +457,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
           onWin={handleSpinWin}
           onLose={handleSpinLose}
           onClose={() => setShowSpinWheel(false)}
+        />
+      )}
+
+      {showAviator && (
+        <AviatorGame
+          user={user}
+          onWin={handleAviatorWin}
+          onLose={handleAviatorLose}
+          onClose={() => setShowAviator(false)}
         />
       )}
 
