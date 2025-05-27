@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -169,7 +168,7 @@ const DepositForm: React.FC<DepositFormProps> = ({ user, onClose, onSuccess }) =
               </div>
 
               <div className="text-xs text-gray-400">
-                Your deposit will be processed by an admin within 24 hours.
+                Your deposit will be processed shortly.
               </div>
 
               <div className="flex gap-2">
@@ -196,7 +195,7 @@ const DepositForm: React.FC<DepositFormProps> = ({ user, onClose, onSuccess }) =
               <div className="text-4xl mb-4">✅</div>
               <h3 className="text-xl font-bold text-green-400 mb-2">Request Submitted!</h3>
               <p className="text-sm text-gray-300">
-                Your deposit request is now pending admin approval. You'll receive the funds once confirmed.
+                Your deposit request is now being processed. You'll receive the funds shortly.
               </p>
             </div>
           )}

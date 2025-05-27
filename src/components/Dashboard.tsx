@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { User, Plan } from '@/types';
+import { Notification } from '@/types/notifications';
 import PlanUpgrade from './PlanUpgrade';
 import WithdrawalForm from './WithdrawalForm';
 import TransactionHistory from './TransactionHistory';
@@ -9,7 +10,8 @@ import SpinningWheel from './SpinningWheel';
 import AdminPanel from './AdminPanel';
 import DepositForm from './DepositForm';
 import AviatorGame from './AviatorGame';
-import { LogOut } from 'lucide-react';
+import NotificationCenter from './NotificationCenter';
+import { LogOut, Bell } from 'lucide-react';
 import { StorageService } from '@/services/storageService';
 
 interface DashboardProps {
@@ -26,7 +28,33 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
   const [showAviator, setShowAviator] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [successStories, setSuccessStories] = useState<string[]>([]);
+
+  // Load user notifications
+  useEffect(() => {
+    const loadNotifications = () => {
+      const allNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+      const userNotifications = allNotifications.filter((n: Notification) => n.userId === user.id);
+      setNotifications(userNotifications);
+    };
+
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, [user.id]);
+
+  const unreadNotifications = notifications.filter(n => !n.read);
+
+  const handleMarkAsRead = (notificationId: string) => {
+    const allNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+    const updatedNotifications = allNotifications.map((n: Notification) => 
+      n.id === notificationId ? { ...n, read: true } : n
+    );
+    localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, read: true } : n));
+  };
 
   const realNames = [
     'Emmanuel', 'Richard', 'Stephanie', 'Michael', 'Sarah', 'David', 'Jessica', 
@@ -236,17 +264,34 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
         {/* Header */}
         <Card className="crypto-card text-white border-0">
           <CardHeader className="text-center relative px-4 sm:px-6">
-            <Button
-              onClick={onLogout}
-              className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm"
-              size="sm"
-            >
-              <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Logout
-            </Button>
-            <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold neon-text pr-16 sm:pr-20">
-              Welcome back, {user.username}! 🚀
-            </CardTitle>
+            <div className="flex justify-between items-start mb-2">
+              {/* Notifications Button */}
+              <Button
+                onClick={() => setShowNotifications(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white relative"
+                size="sm"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadNotifications.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                    {unreadNotifications.length}
+                  </span>
+                )}
+              </Button>
+
+              <CardTitle className="text-2xl sm:text-3xl md:text-4xl font-bold neon-text flex-1 text-center">
+                Welcome back, {user.username}! 🚀
+              </CardTitle>
+
+              <Button
+                onClick={onLogout}
+                className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm"
+                size="sm"
+              >
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Logout
+              </Button>
+            </div>
             <p className="text-gray-300 text-sm sm:text-base">Your crypto journey starts here</p>
             
             {/* Upgrade Status */}
@@ -419,6 +464,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
       </div>
 
       {/* Modals */}
+      {showNotifications && (
+        <NotificationCenter 
+          notifications={notifications}
+          onMarkAsRead={handleMarkAsRead}
+          onClose={() => setShowNotifications(false)}
+        />
+      )}
+
       {showUpgrade && (
         <PlanUpgrade 
           plans={plans} 

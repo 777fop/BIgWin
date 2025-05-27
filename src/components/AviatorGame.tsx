@@ -99,6 +99,48 @@ const AviatorGame: React.FC<AviatorGameProps> = ({ user, onWin, onLose, onClose 
     };
   }, []);
 
+  // Cloud animation component
+  const AnimatedClouds = () => (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="cloud cloud-1">☁️</div>
+      <div className="cloud cloud-2">☁️</div>
+      <div className="cloud cloud-3">☁️</div>
+      <div className="cloud cloud-4">☁️</div>
+      <style jsx>{`
+        .cloud {
+          position: absolute;
+          font-size: 1.5rem;
+          opacity: 0.6;
+          animation: float 10s infinite linear;
+        }
+        .cloud-1 {
+          top: 20%;
+          animation-delay: 0s;
+        }
+        .cloud-2 {
+          top: 40%;
+          animation-delay: -3s;
+        }
+        .cloud-3 {
+          top: 60%;
+          animation-delay: -6s;
+        }
+        .cloud-4 {
+          top: 80%;
+          animation-delay: -9s;
+        }
+        @keyframes float {
+          0% {
+            transform: translateX(-100px);
+          }
+          100% {
+            transform: translateX(calc(100vw + 100px));
+          }
+        }
+      `}</style>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-2 z-50">
       <Card className="bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white border-0 w-full max-w-sm sm:max-w-md shadow-2xl">
@@ -138,50 +180,55 @@ const AviatorGame: React.FC<AviatorGameProps> = ({ user, onWin, onLose, onClose 
             </div>
           </div>
 
-          {/* Game Display */}
-          <div className="bg-black/50 h-40 sm:h-48 rounded border border-purple-500/30 flex flex-col items-center justify-center relative overflow-hidden">
+          {/* Enhanced Game Display with Sky Background */}
+          <div className="bg-gradient-to-b from-blue-400 via-blue-300 to-blue-200 h-40 sm:h-48 rounded border border-purple-500/30 flex flex-col items-center justify-center relative overflow-hidden">
+            <AnimatedClouds />
+            
             {gameState === 'waiting' && !hasPlacedBet && (
-              <div className="text-center">
+              <div className="text-center z-10">
                 <div className="text-2xl sm:text-3xl mb-2">✈️</div>
-                <div className="text-lg font-bold text-purple-400">Place your bet!</div>
+                <div className="text-lg font-bold text-purple-800">Place your bet!</div>
               </div>
             )}
 
             {gameState === 'waiting' && hasPlacedBet && (
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl mb-2">⏳</div>
-                <div className="text-lg font-bold text-yellow-400">Starting...</div>
-                <div className="text-sm text-gray-400">Bet: {betAmount} USDT</div>
+              <div className="text-center z-10">
+                <div className="text-2xl sm:text-3xl mb-2 animate-bounce">⏳</div>
+                <div className="text-lg font-bold text-purple-800">Starting...</div>
+                <div className="text-sm text-purple-600">Bet: {betAmount} USDT</div>
               </div>
             )}
 
             {gameState === 'flying' && (
-              <div className="text-center">
-                <div className="text-4xl sm:text-5xl mb-2 animate-bounce">✈️</div>
-                <div className="text-3xl sm:text-4xl font-bold text-green-400">
+              <div className="text-center z-10">
+                <div className="text-4xl sm:text-5xl mb-2 animate-bounce transform transition-transform duration-100" 
+                     style={{ transform: `translateY(-${multiplier * 2}px) scale(${1 + multiplier * 0.1})` }}>
+                  ✈️
+                </div>
+                <div className="text-3xl sm:text-4xl font-bold text-green-600 bg-white/90 px-4 py-2 rounded-lg shadow-lg">
                   {multiplier.toFixed(2)}x
                 </div>
-                <div className="text-sm text-gray-400">
+                <div className="text-sm text-purple-800 mt-2 bg-white/80 px-3 py-1 rounded">
                   Potential win: {(betAmount * multiplier).toFixed(2)} USDT
                 </div>
               </div>
             )}
 
             {gameState === 'crashed' && (
-              <div className="text-center">
-                <div className="text-4xl sm:text-5xl mb-2">💥</div>
-                <div className="text-2xl font-bold text-red-400">CRASHED!</div>
-                <div className="text-lg text-red-300">{crashPoint.toFixed(2)}x</div>
-                <div className="text-sm text-gray-400">Lost {betAmount} USDT</div>
+              <div className="text-center z-10">
+                <div className="text-4xl sm:text-5xl mb-2 animate-pulse">💥</div>
+                <div className="text-2xl font-bold text-red-600 bg-white/90 px-4 py-2 rounded-lg">CRASHED!</div>
+                <div className="text-lg text-red-500">{crashPoint.toFixed(2)}x</div>
+                <div className="text-sm text-purple-800">Lost {betAmount} USDT</div>
               </div>
             )}
 
             {gameState === 'cashed_out' && (
-              <div className="text-center">
+              <div className="text-center z-10">
                 <div className="text-4xl sm:text-5xl mb-2">🎉</div>
-                <div className="text-2xl font-bold text-green-400">CASHED OUT!</div>
-                <div className="text-lg text-green-300">{multiplier.toFixed(2)}x</div>
-                <div className="text-sm text-gray-400">
+                <div className="text-2xl font-bold text-green-600 bg-white/90 px-4 py-2 rounded-lg">CASHED OUT!</div>
+                <div className="text-lg text-green-500">{multiplier.toFixed(2)}x</div>
+                <div className="text-sm text-purple-800">
                   Won {(betAmount * multiplier - betAmount).toFixed(2)} USDT
                 </div>
               </div>

@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   email: string;
@@ -23,6 +22,7 @@ export interface User {
   isAdmin?: boolean;
   hasRegistrationBonus?: boolean;
   referredBy?: string;
+  notifications?: string[]; // Array of notification IDs
 }
 
 export interface Transaction {
