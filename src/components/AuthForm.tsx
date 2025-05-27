@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User } from '@/types';
 import { StorageService } from '@/services/storageService';
 
@@ -12,191 +12,175 @@ interface AuthFormProps {
 
 const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
-  const [isResetPassword, setIsResetPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resetMessage, setResetMessage] = useState('');
+  const [error, setError] = useState('');
+
+  // Check for referral code in URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      setReferralCode(refCode);
+      setIsLogin(false); // Switch to registration mode
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
+    setError('');
 
     try {
-      if (isResetPassword) {
-        // Handle password reset
-        if (!email) {
-          setError('Please enter your email address');
-          setLoading(false);
-          return;
-        }
-        
-        // Create password reset request
-        StorageService.createPasswordResetRequest(email);
-        setResetMessage('Password reset request submitted! An admin will review your request. Please try again after some minutes.');
-        setIsResetPassword(false);
-        setEmail('');
-      } else if (isLogin) {
-        // Login
+      if (isLogin) {
         const user = StorageService.authenticateUser(email, password);
         if (user) {
-          StorageService.setCurrentUser(user);
           onLogin(user);
         } else {
           setError('Invalid email or password');
         }
       } else {
-        // Registration
-        try {
-          const newUser = StorageService.registerUser(email, username, password, referralCode);
-          StorageService.setCurrentUser(newUser);
-          onLogin(newUser);
-        } catch (err) {
-          setError(err instanceof Error ? err.message : 'Registration failed');
+        if (!email || !password) {
+          setError('Email and password are required');
+          return;
         }
+
+        const user = StorageService.registerUser(email, username, password, referralCode || undefined);
+        onLogin(user);
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
+  const handlePasswordReset = () => {
+    if (!email) {
+      setError('Please enter your email first');
+      return;
+    }
+
+    try {
+      StorageService.createPasswordResetRequest(email);
+      alert('Password reset request submitted. An admin will process it shortly.');
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error submitting password reset request');
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-2 sm:p-4">
-      <Card className="w-full max-w-xs sm:max-w-sm md:max-w-md crypto-card text-white border-0">
-        <CardHeader className="text-center px-3 sm:px-4 md:px-6">
-          <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold neon-text">
-            💰 CryptoEarn Pro
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-black/40 backdrop-blur-lg border-purple-500/20 text-white">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+            BigWin Crypto
           </CardTitle>
-          <p className="text-yellow-300 font-semibold text-xs sm:text-sm md:text-base">
-            {isResetPassword ? 'Reset Password' : isLogin ? 'Welcome Back!' : 'Join & Get 1 USDT Bonus!'}
+          <p className="text-gray-300 mt-2">
+            {isLogin ? 'Welcome back!' : 'Join the crypto revolution!'}
           </p>
-        </CardHeader>
-        <CardContent className="px-3 sm:px-4 md:px-6">
-          {resetMessage && (
-            <div className="bg-green-500/20 border border-green-500/30 p-2 sm:p-3 rounded text-green-300 text-xs sm:text-sm mb-3 sm:mb-4">
-              {resetMessage}
+          {referralCode && (
+            <div className="bg-green-600/20 border border-green-500 p-2 rounded mt-2">
+              <p className="text-green-300 text-sm">
+                🎉 You were referred! Code: <span className="font-bold">{referralCode}</span>
+              </p>
             </div>
           )}
-          
-          <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3 md:space-y-4">
-            {error && (
-              <div className="bg-red-500/20 border border-red-500/30 p-2 sm:p-3 rounded text-red-300 text-xs sm:text-sm">
-                {error}
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
+                required
+              />
+            </div>
+
+            {!isLogin && (
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Username (optional)"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
+                />
               </div>
             )}
-            
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-12"
-            />
-            
-            {!isLogin && !isResetPassword && (
-              <Input
-                type="text"
-                placeholder="Username (optional)"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-12"
-              />
-            )}
-            
-            {!isResetPassword && (
+
+            <div>
               <Input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
                 required
-                className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-12"
               />
+            </div>
+
+            {!isLogin && (
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Referral Code (optional)"
+                  value={referralCode}
+                  onChange={(e) => setReferralCode(e.target.value)}
+                  className="bg-gray-800/50 border-gray-600 text-white placeholder-gray-400"
+                />
+              </div>
             )}
-            
-            {!isLogin && !isResetPassword && (
-              <Input
-                type="text"
-                placeholder="Referral Code (optional)"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                className="bg-white/10 border-white/20 text-white placeholder-white/60 text-xs sm:text-sm md:text-base h-8 sm:h-10 md:h-12"
-              />
+
+            {error && (
+              <div className="bg-red-600/20 border border-red-500 p-3 rounded">
+                <p className="text-red-300 text-sm">{error}</p>
+              </div>
             )}
-            
-            <Button 
-              type="submit" 
+
+            <Button
+              type="submit"
               disabled={loading}
-              className="w-full gold-gradient text-black font-bold text-xs sm:text-sm md:text-lg py-2 sm:py-3 hover:scale-105 transition-transform disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 hover:scale-105 transition-transform"
             >
-              {loading ? (
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-black"></div>
-                  {isResetPassword ? 'Sending...' : isLogin ? 'Logging in...' : 'Creating account...'}
-                </div>
-              ) : (
-                isResetPassword ? '🔑 RESET PASSWORD' : isLogin ? '🚀 LOGIN NOW' : '💎 CLAIM 1 USDT BONUS'
-              )}
+              {loading ? 'Processing...' : (isLogin ? 'Login' : 'Register')}
             </Button>
           </form>
-          
-          <div className="text-center mt-2 sm:mt-3 md:mt-4 space-y-2">
-            {!isResetPassword && (
-              <>
-                <button
-                  onClick={() => {
-                    setIsLogin(!isLogin);
-                    setError('');
-                    setResetMessage('');
-                  }}
-                  className="text-yellow-300 hover:text-yellow-100 underline text-xs sm:text-sm md:text-base block w-full"
-                >
-                  {isLogin ? "Don't have an account? Sign up!" : 'Already have an account? Login!'}
-                </button>
-                
-                {isLogin && (
-                  <button
-                    onClick={() => {
-                      setIsResetPassword(true);
-                      setError('');
-                      setResetMessage('');
-                    }}
-                    className="text-blue-300 hover:text-blue-100 underline text-xs sm:text-sm md:text-base"
-                  >
-                    Forgot Password?
-                  </button>
-                )}
-              </>
-            )}
-            
-            {isResetPassword && (
-              <button
-                onClick={() => {
-                  setIsResetPassword(false);
-                  setError('');
-                  setResetMessage('');
-                }}
-                className="text-yellow-300 hover:text-yellow-100 underline text-xs sm:text-sm md:text-base"
+
+          <div className="text-center space-y-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-purple-300 hover:text-white"
+            >
+              {isLogin ? "Don't have an account? Register" : 'Already have an account? Login'}
+            </Button>
+
+            {isLogin && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handlePasswordReset}
+                className="text-blue-300 hover:text-white text-sm"
               >
-                Back to Login
-              </button>
+                Forgot Password?
+              </Button>
             )}
           </div>
-          
-          {!isLogin && !isResetPassword && (
-            <div className="mt-2 sm:mt-3 md:mt-4 p-2 sm:p-3 bg-yellow-500/20 rounded-lg border border-yellow-500/30">
-              <p className="text-yellow-200 text-xs sm:text-sm text-center">
-                🎁 Limited Time: Get 1 USDT signup bonus + 1 USDT per referral!
-              </p>
-            </div>
-          )}
+
+          <div className="text-center text-xs text-gray-400 mt-6">
+            <p>🚀 Start earning crypto today!</p>
+            <p>💰 Daily rewards • 🎰 Games • 👥 Referrals</p>
+          </div>
         </CardContent>
       </Card>
     </div>

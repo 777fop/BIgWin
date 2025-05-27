@@ -26,12 +26,32 @@ const AviatorGame: React.FC<AviatorGameProps> = ({ user, onWin, onLose, onClose 
   // WIN PROBABILITY: 40% (adjust this value to change win rate)
   const WIN_PROBABILITY = 0.4;
 
+  // Get withdrawal minimum based on user plan (assuming basic=100, premium/vip=5)
+  const getWithdrawalMinimum = () => {
+    // This should ideally come from user data, but for now we'll assume basic plan
+    return 100; // Default to basic plan withdrawal minimum
+  };
+
   const generateCrashPoint = () => {
+    const withdrawalMin = getWithdrawalMinimum();
+    const currentBalance = user.balance;
+    const potentialWinAmount = betAmount * 10; // Max potential win at 10x multiplier
+    const newBalance = currentBalance + potentialWinAmount - betAmount;
+    
+    // If potential win would exceed withdrawal minimum, force a loss
+    if (newBalance >= withdrawalMin - 5) {
+      return 1.01 + Math.random() * 0.18; // Force loss
+    }
+    
     const isWin = Math.random() < WIN_PROBABILITY;
     
     if (isWin) {
-      // Generate higher multipliers for wins (1.2x to 10x)
-      return 1.2 + Math.random() * 8.8;
+      // Calculate safe multiplier that won't exceed withdrawal minimum
+      const maxSafeMultiplier = Math.min(10, (withdrawalMin - 5 - currentBalance + betAmount) / betAmount);
+      if (maxSafeMultiplier <= 1.2) {
+        return 1.01 + Math.random() * 0.18; // Force loss if no safe win possible
+      }
+      return 1.2 + Math.random() * (maxSafeMultiplier - 1.2);
     } else {
       // Generate low multipliers for losses (1.01x to 1.19x)
       return 1.01 + Math.random() * 0.18;
@@ -106,7 +126,7 @@ const AviatorGame: React.FC<AviatorGameProps> = ({ user, onWin, onLose, onClose 
       <div className="cloud cloud-2">☁️</div>
       <div className="cloud cloud-3">☁️</div>
       <div className="cloud cloud-4">☁️</div>
-      <style jsx>{`
+      <style>{`
         .cloud {
           position: absolute;
           font-size: 1.5rem;

@@ -258,6 +258,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
     return lastClaim.toDateString() !== today.toDateString();
   };
 
+  const copyReferralLink = () => {
+    const baseUrl = window.location.origin;
+    const referralLink = `${baseUrl}?ref=${user.referralCode}`;
+    navigator.clipboard.writeText(referralLink);
+    alert('Referral link copied to clipboard! 🎉');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 p-2 sm:p-4">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
@@ -419,20 +426,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onUserUpdate, onLogout }) =
           </CardHeader>
           <CardContent className="space-y-4 px-4 sm:px-6">
             <p className="text-gray-300 text-sm sm:text-base">
-              Share your referral code and earn bonus USDT for every friend who joins!
+              Share your referral link and earn bonus USDT for every friend who joins!
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="space-y-3">
               <div className="flex-1 w-full bg-black/30 p-3 rounded border border-yellow-500">
+                <div className="text-xs text-gray-400 mb-1">Your Referral Code:</div>
                 <span className="text-yellow-400 font-mono text-base sm:text-lg">{user.referralCode}</span>
               </div>
+              <div className="flex-1 w-full bg-black/30 p-3 rounded border border-blue-500">
+                <div className="text-xs text-gray-400 mb-1">Your Referral Link:</div>
+                <span className="text-blue-400 font-mono text-xs sm:text-sm break-all">
+                  {window.location.origin}?ref={user.referralCode}
+                </span>
+              </div>
               <Button 
-                onClick={() => {
-                  navigator.clipboard.writeText(`https://bigwin-yq75.onrender.com/ Use my referral code: ${user.referralCode}`);
-                  alert('Referral message copied to clipboard!');
-                }}
-                className="gold-gradient text-black font-bold w-full sm:w-auto"
+                onClick={copyReferralLink}
+                className="gold-gradient text-black font-bold w-full"
               >
-                📋 COPY LINK
+                📋 COPY REFERRAL LINK
               </Button>
             </div>
             <div className="text-sm text-gray-400">
