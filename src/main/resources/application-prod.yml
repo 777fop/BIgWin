@@ -1,0 +1,22 @@
+# application-prod.yml
+spring:
+  datasource:
+    url: jdbc:postgresql://dpg-d0q55m8dl3ps73bb4420-a.oregon-postgres.render.com:5432/bigwin_db
+    username: bigwin
+    password: MkaKasRvZ5VkPD3ENlbc68smlazGwrxH
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    baseline-on-migrate: true
+
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 8080

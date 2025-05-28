@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: bigwin-server
+  profiles:
+    active: prod  # Set the default profile to 'dev'
+
+api:
+  football:
+    key: 866801595e6e378b38a0b8cbc11d62ec

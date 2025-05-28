@@ -1,0 +1,25 @@
+# application-dev.yml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bigwin_db
+    username: root
+    password: Brian
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    baseline-on-migrate: true
+
+  main:
+    allow-bean-definition-overriding: true
+
+server:
+  port: 8080
