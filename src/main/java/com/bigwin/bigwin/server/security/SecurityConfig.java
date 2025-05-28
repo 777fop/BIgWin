@@ -52,7 +52,17 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("https://bigwin-yq75.onrender.com"));
+
+        // Whitelist your production frontends…
+        config.setAllowedOrigins(List.of(
+                "https://bigwin-yq75.onrender.com",
+                "https://bigwin-uqky.onrender.com",
+                // …and your local/dev addresses:
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "http://192.168.88.250:8080"
+        ));
+
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
@@ -60,4 +70,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
+
 }
