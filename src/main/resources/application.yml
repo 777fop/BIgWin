@@ -2,8 +2,11 @@ spring:
   application:
     name: bigwin-server
   profiles:
-    active: prod  # Set the default profile to 'dev'
+    active: prod
 
 api:
   football:
     key: 866801595e6e378b38a0b8cbc11d62ec
+jwt:
+  secret: my_super_secret_bigwin_key_that_is_secure_and_long_enough_123456
+  expiration: 86400000 # 24 hours in milliseconds

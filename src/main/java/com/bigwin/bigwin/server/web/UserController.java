@@ -7,6 +7,7 @@ import com.bigwin.bigwin.server.domain.dto.response.AuthResponse;
 import com.bigwin.bigwin.server.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +34,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<User> getProfile(Authentication authentication) {
+        return ResponseEntity.ok(userService.getUserProfile(authentication.getName()));
+    }
+
     @PutMapping("/approve/{id}")
     public ResponseEntity<User> approveUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.approveUser(id));
@@ -43,4 +49,5 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
 }

@@ -15,4 +15,5 @@ public interface UserService {
     List<User> getAllUsers();
     User approveUser(Long id);
     void deleteUser(Long id);
+    User getUserProfile(String email);
 }

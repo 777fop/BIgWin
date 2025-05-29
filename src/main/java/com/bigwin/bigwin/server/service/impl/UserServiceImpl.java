@@ -84,6 +84,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getUserProfile(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
+    @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
@@ -101,4 +107,6 @@ public class UserServiceImpl implements UserService {
         String token = jwtService.generateToken(user);
         return new AuthResponse(token);
     }
+
+
 }
