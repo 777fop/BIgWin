@@ -2,7 +2,7 @@ spring:
   application:
     name: bigwin-server
   profiles:
-    active: prod
+    active: dev
 
 api:
   football:

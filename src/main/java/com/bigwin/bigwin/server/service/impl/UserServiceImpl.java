@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(newUser);
-        String token = jwtService.generateToken(newUser);
+        String token = jwtService.generateToken(newUser.getEmail());
         return new AuthResponse(token);
     }
 
@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService {
         );
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        String token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(user.getEmail());
         return new AuthResponse(token);
     }
 
