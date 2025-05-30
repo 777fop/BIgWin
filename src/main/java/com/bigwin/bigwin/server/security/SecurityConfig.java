@@ -53,9 +53,12 @@ public class SecurityConfig {
 
         // ✅ Use origin patterns instead of allowedOrigins
         config.setAllowedOriginPatterns(List.of(
-                "https://*.onrender.com",
-                "http://localhost:*",
-                "http://192.168.88.250:*"
+                "https://bigwin-yq75.onrender.com",
+                "https://bigwin-uqky.onrender.com",
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "http://192.168.88.250:8080",
+                "http://192.168.88.250:3000"
         ));
 
         config.setAllowedHeaders(List.of("*"));
