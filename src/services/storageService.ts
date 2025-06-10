@@ -1,7 +1,7 @@
 
 import { User } from '@/types';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 export class StorageService {
   static async login(email: string, password: string): Promise<User> {

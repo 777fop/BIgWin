@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ interface AuthFormProps {
   onLogin: (user: User) => void;
 }
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);

@@ -1,8 +1,7 @@
-
 import { User } from '@/types';
 
 class ApiService {
-  static BASE_URL = 'http://localhost:8080';
+  static BASE_URL = '/api';
 
   private static getAuthHeaders() {
     const token = localStorage.getItem('token');
@@ -26,7 +25,7 @@ class ApiService {
 
   // Authentication
   static async register(userData: { username: string; email: string; password: string; referralCode?: string }) {
-    const response = await fetch(`${this.BASE_URL}/api/auth/register`, {
+    const response = await fetch(`${this.BASE_URL}/auth/register`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(userData),
@@ -35,7 +34,7 @@ class ApiService {
   }
 
   static async login(credentials: { email: string; password: string }) {
-    const response = await fetch(`${this.BASE_URL}/api/auth/login`, {
+    const response = await fetch(`${this.BASE_URL}/auth/login`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(credentials),
